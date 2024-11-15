@@ -17,11 +17,8 @@ function checkUserNumber(Usernum){
     if (Usernum.length != numberlength){ 
         return null;
     }
-    let arr_temp = new Set(Usernum);
-    if (arr_temp.size != numberlength){
-        return null;
-    }
-    return arr_temp;
+
+    return Usernum;
 }
 
 // 결과 {결과 실패 -> 힌트, 결과 성공 -> 처음으로 돌아감}
@@ -29,31 +26,38 @@ function compareNumber(pcNum,userNum){
     let strike = 0;
     let ball = 0;
 
-    for(let idx = 0; idx < userNum.length; idx++){
-        // 카운트 2 
-        // 같은 값이 있는지 체크 , 인덱스 체크
-        // 같은값 카운트 - 인덱스 카운트
-        console.log(userNum[idx]);
-        let result_idx = pcNum.indexOf(userNum[idx]);        
-        
-        if (result_idx == -1){
-            continue;
-        }
-        if (result_idx == idx){
-            strike +=1;
-        }
-        else if (result_idx != idx){
-            ball += 1;
-        }
-    }
+    let strike_num = pcNum.filter((element, index)=>userNum.indexOf(element)==index);
+    let result_idx = pcNum.filter((element)=>userNum.includes(element));
+
+    strike = strike_num.length;
+    ball = result_idx - strike;
+
+    // for(let idx = 0; idx < userNum.length; idx++){
+    //     // 카운트 2 
+    //     // 같은 값이 있는지 체크 , 인덱스 체크
+    //     // 같은값 카운트 - 인덱스 카운트
+    //     console.log(userNum[idx]);
+    //     console.log(result_idx);
+
+    //     if (result_idx == -1){
+    //         continue;
+    //     }
+    //     if (result_idx == idx){
+    //         strike +=1;
+    //     }
+    //     else if (result_idx != idx){
+    //         ball += 1;
+    //     }
+    // }
     
-    if (ball == 0 && strike == 0){
+     if (ball == 0 && strike == 0){
+        console.log(pcNum);
         console.log('Nothing');
-    }
-    else{
-        console.log('strike =' + strike +'ball =' + ball);
-    }
+     }
+     else{
+         console.log(pcNum);
+         console.log('strike = ' + strike+ ' ' +'ball = ' + ball);
+     }
 }
-console.log(getPCNumber());
-console.log(checkUserNumber('123'));
-compareNumber('123','123');
+
+compareNumber(getPCNumber(), checkUserNumber([1,2,3]));

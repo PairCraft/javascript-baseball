@@ -56,4 +56,4 @@ function compareNumber(pcNum,userNum){
 }
 console.log(getPCNumber());
 console.log(checkUserNumber('123'));
-compareNumber();
+compareNumber('123','123');

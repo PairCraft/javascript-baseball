@@ -1,3 +1,4 @@
+// 커밋 테스트
 // PC세 자릿 수 뽑기
 const numberlength = 3;
 function getPCnumber(){

@@ -17,14 +17,14 @@ function playGame(){
         switch(parseInt(answer)){
             case GAMESTATE.START:{
                 /*게임 플레이*/             
-                pc_num = getPCNumber();
-
-                user_num = requireUserNumber();
-             
-                compareNumber(pc_num, user_num);
-                
-                playGame();
+                let pc_num = getPCNumber();
+                let user_num = requireUserNumber();
+                // setTimeout(function() {
+                //     compareNumber(pc_num, user_num);
+                // }, 3000);
+               compareNumber(pc_num, user_num);
             }
+            break;
             case GAMESTATE.EXIT:{
                 console.log('애플리케이션이 종료되었습니다.');
                 break;
@@ -45,18 +45,14 @@ function getPCNumber(){
     return arr_PCnumber;
 }
 
-const rl2 = readline.createInterface({
-    input:process.stdin,
-    output:process.stdout
-});
-
 function requireUserNumber(){
-    rl2.question('숫자를 입력해주세요:',(answer)=>{
+    rl.question('숫자를 입력해주세요:',(answer)=>{
         num = checkUserNumber(answer)
         if(num == null){
             requireUserNumber();
         }
         else{
+            num = num.split('').map(Number);
             return num;
         }
     });

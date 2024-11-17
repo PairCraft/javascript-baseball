@@ -1,36 +1,36 @@
+const { log } = require('console');
 const readline = require('readline');
 const rl = readline.createInterface({
     input:process.stdin,
     output:process.stdout
 });
+
 const NUMBER_LENGTH = 3;
-
-
 const GAMESTATE = {
     START:1,
     EXIT:9
 };
-
 Object.freeze(GAMESTATE);
 
-rl.question('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요.',(answer)=>{
-    switch(parseInt(answer)){
-        case GAMESTATE.START:{
-            /*게임 플레이*/
-            break 
-        }
-        case GAMESTATE.EXIT:{
-            break
-        }
-    }
-});
-
 function playGame(){
+    rl.question('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요.',(answer)=>{
+        switch(parseInt(answer)){
+            case GAMESTATE.START:{
+                /*게임 플레이*/             
+                pc_num = getPCNumber();
 
-    pc_num = getPCNumber();
-    user_num = requireUserNumber();
-    compareNumber(pc_num,user_num);
-
+                user_num = requireUserNumber();
+             
+                compareNumber(pc_num, user_num);
+                
+                playGame();
+            }
+            case GAMESTATE.EXIT:{
+                console.log('애플리케이션이 종료되었습니다.');
+                break;
+            }
+        }
+    });
 }
 
 function getPCNumber(){
@@ -45,8 +45,13 @@ function getPCNumber(){
     return arr_PCnumber;
 }
 
+const rl2 = readline.createInterface({
+    input:process.stdin,
+    output:process.stdout
+});
+
 function requireUserNumber(){
-    rl.question('숫자를 입력해주세요:',(answer)=>{
+    rl2.question('숫자를 입력해주세요:',(answer)=>{
         num = checkUserNumber(answer)
         if(num == null){
             requireUserNumber();
@@ -54,7 +59,6 @@ function requireUserNumber(){
         else{
             return num;
         }
-        
     });
 }
 
@@ -84,6 +88,7 @@ function compareNumber(pcNum,userNum){
         console.log(strike_count + '스트라이크');
         console,log('3개의 숫자를 모두 맞히셨습니다.');
         console.log('-------게임 종료-------');
+        playstate = GAMESTATE.EXIT;
     }
     if (ball_count == 0 && strike_count == 0){
         console.log(pcNum);
@@ -95,4 +100,4 @@ function compareNumber(pcNum,userNum){
     }
 }
 
-compareNumber(getPCNumber(), checkUserNumber([1,2,3]));
+playGame();

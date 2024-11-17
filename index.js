@@ -22,7 +22,6 @@ rl.question('게임을 새로 시작하려면 1, 종료하려면 9를 입력하�
         case GAMESTATE.EXIT:{
             break
         }
-        
     }
 });
 
@@ -38,7 +37,7 @@ function getPCNumber(){
     let arr_number = [1,2,3,4,5,6,7,8,9];
     let arr_PCnumber = [NUMBER_LENGTH];
     for(let idx = 0; idx < NUMBER_LENGTH; idx++){
-        let randomindex = Math.floor(Math.random()* arr_number.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼*/;
+        let randomindex = Math.floor(Math.random()* arr_number.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼*/
         arr_PCnumber[idx] = arr_number[randomindex];
         arr_number.splice(randomindex,1);
     }

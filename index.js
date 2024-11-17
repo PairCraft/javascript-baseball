@@ -1,13 +1,13 @@
 // PC세 자릿 수 뽑기
 const numberlength = 3;
-console.log("hello")
+
 function getPCNumber(){
     let arr_number = [1,2,3,4,5,6,7,8,9];
     let arr_PCnumber = [3];
-     for(let idx = 0; idx < numberlength; idx++){
-         let randomindex = Math.floor(Math.random()* arr_number.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼*/;
-         arr_PCnumber[idx] = arr_number[randomindex];
-         arr_number.splice(randomindex,1);
+    for(let idx = 0; idx < numberlength; idx++){
+        let randomindex = Math.floor(Math.random()* arr_number.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼*/;
+        arr_PCnumber[idx] = arr_number[randomindex];
+        arr_number.splice(randomindex,1);
     }
     return arr_PCnumber;
 }
@@ -26,11 +26,11 @@ function compareNumber(pcNum,userNum){
     let strike = 0;
     let ball = 0;
 
-    let strike_num = pcNum.filter((element, index)=>userNum.indexOf(element)==index);
-    let result_idx = pcNum.filter((element)=>userNum.includes(element));
+    let arr_strike = pcNum.filter((element, index)=>userNum.indexOf(element)==index);
+    let arr_include = pcNum.filter((element)=>userNum.includes(element));
 
-    strike = strike_num.length;
-    ball = result_idx - strike;
+    strike = arr_strike.length;
+    ball = arr_include.length - strike;
 
     // for(let idx = 0; idx < userNum.length; idx++){
     //     // 카운트 2 

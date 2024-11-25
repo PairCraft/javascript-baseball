@@ -51,7 +51,7 @@ function getComputerNumbers(){
     let numbers = [1,2,3,4,5,6,7,8,9];
     let computerNumbers = [];
     for(let idx = 0; idx < NUMBER_LENGTH; idx++){
-        let randomindex = Math.floor(Math.random()* numbers.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼*/
+        let randomindex = Math.floor(Math.random()* numbers.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼 map으로 변환 */ 
         computerNumbers[idx] = numbers[randomindex];
         numbers.splice(randomindex,1);
     }

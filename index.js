@@ -10,54 +10,65 @@ const GAMESTATE = {
     EXIT:9
 };
 Object.freeze(GAMESTATE);
+
 //유저입력 받는 함수 -> 입력대기
 async function requestInput(msg){
     return new Promise((resolve)=>{
         rl.question(msg,(answer)=>resolve(answer))
     })
 }
+
 async function playGame(){
-    let gameState = await requestInput('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요. ')
-    gameState = parseInt(gameState);
-    switch((gameState)){
-        case GAMESTATE.START:{await playLoop(gameState)
+    let gameState = GAMESTATE.START
+
+    while(gameState === GAMESTATE.START){
+        gameState = await requestInput('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요. ')
+        gameState = parseInt(gameState);
+
+        if (gameState === GAMESTATE.EXIT){
             break;
         }
-        case GAMESTATE.EXIT:{
-            console.log('애플리케이션이 종료되었습니다.');
-            rl.close();
-            break;
-        }
+        
+        gameState = await playLoop(gameState)
     }
+
+    console.log('애플리케이션이 종료되었습니다.');
+    rl.close();
 }
+
 async function playLoop(gameState) {
+    if (gameState !== GAMESTATE.START){
+        console.log('1 또는 9를 입력해주세요.')
+        return GAMESTATE.START;
+    }
+
     const computerNumber = getComputerNumbers();
     console.log(computerNumber)
 
     while(gameState === GAMESTATE.START){
         let userNumber = await requireUserNumbers();
         if(userNumber === INTERRUPT){
-            console.log('애플리케이션이 종료되었습니다.');
-            rl.close();
-            return;
+            return GAMESTATE.EXIT;
         }
         if(checkGameClear(computerNumber, userNumber)){
-            gameState = GAMESTATE.EXIT
+            return GAMESTATE.START;
         }
     }
-    playGame() 
 }
+
 function getComputerNumbers(){
     let numbers = [1,2,3,4,5,6,7,8,9];
-    let computerNumbers = [];
-    for(let idx = 0; idx < NUMBER_LENGTH; idx++){
-        let randomindex = Math.floor(Math.random()* numbers.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼 map으로 변환 */ 
-        computerNumbers[idx] = numbers[randomindex];
-        numbers.splice(randomindex,1);
-    }
+    let computerNumbers = Array.from({length: NUMBER_LENGTH}, () => {
+        let randomIndex = Math.floor(Math.random()* numbers.length);/*랜덤으로 뽑는다 0에서 배열 넘버의 사이즈 -1 만큼*/ 
+        let selectedNumber = numbers[randomIndex];
+        numbers.splice(randomIndex, 1);
+        return selectedNumber;
+    })
+
     console.log('컴퓨터가 숫자를 뽑았습니다.');
     return computerNumbers;
 }
+
 async function requireUserNumbers(){
     while(true){
         let numbers = await requestInput('숫자를 입력해주세요: ')
@@ -70,6 +81,7 @@ async function requireUserNumbers(){
         }
     }
 }
+
 //세자리 숫자인지 확인
 function checkUserNumbers(userNumbers){
     if(isNaN(userNumbers)){

@@ -3,10 +3,12 @@ const rl = readline.createInterface({
     input:process.stdin,
     output:process.stdout
 });
-const INTERRUPT = 2;
+
 const NUMBER_LENGTH = 3;
 const GAMESTATE = {
     START:1,
+    HISTORY:2,
+    STATS:3,
     EXIT:9
 };
 Object.freeze(GAMESTATE);
@@ -19,41 +21,83 @@ async function requestInput(msg){
 }
 
 async function playGame(){
-    let gameState = GAMESTATE.START
-
-    while(gameState === GAMESTATE.START){
+    let gameState
+    let gameRecords = []
+    while(gameState !== GAMESTATE.EXIT){
         gameState = await requestInput('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요. ')
-        gameState = parseInt(gameState);
-
-        if (gameState === GAMESTATE.EXIT){
-            break;
-        }
+        gameState = parseInt(gameState)
         
-        gameState = await playLoop(gameState)
+        gameState = await handleGameState(gameState, gameRecords)
     }
-
-    console.log('애플리케이션이 종료되었습니다.');
-    rl.close();
+}
+async function handleGameState(gameState, gameRecords) {
+    switch(gameState){
+        case GAMESTATE.START : 
+            await playLoop(gameRecords)
+            console.log('-------게임 종료-------')
+            break
+        case GAMESTATE.HISTORY : 
+            showHistory(gameRecords)
+            break
+        case GAMESTATE.STATS :
+            showStats(gameRecords)
+            break
+        case GAMESTATE.EXIT :
+            console.log('애플리케이션이 종료되었습니다.')
+            rl.close();
+            break
+        default :
+            console.log('1,2,3,9중에 입력해주세요.')
+            break
+    }
+    return gameState
+}
+function convertTime(time){
+    minutes = ('0' + time.getMinutes()).slice(-2)
+    return `${time.getFullYear()}. ${time.getMonth()}. ${time.getDate()} ${time.getHours()}:${minutes}`
 }
 
-async function playLoop(gameState) {
-    if (gameState !== GAMESTATE.START){
-        console.log('1 또는 9를 입력해주세요.')
-        return GAMESTATE.START;
-    }
+function showHistory(gameRecords){ // 기록
+    history = gameRecords.reduce((acc, record, index) => {
+        return acc + `- [${index+1}] / 시작시간: ${convertTime(record.startTime)} / 종료시간: ${record.endTime} / 횟수: ${record.inningLimit} / 승리자: ${record.isClear}\n`;
+    }, '');
+    console.log(history)
+}
 
-    const computerNumber = getComputerNumbers();
-    console.log(computerNumber)
+function showStats(gameRecords){ // 통계
 
-    while(gameState === GAMESTATE.START){
+}
+
+function recordGameResult(gameRecords,startTime,inningLimit,isClear){
+    const endTime = new Date()
+    gameRecords.push({
+        startTime,
+        endTime,
+        inningLimit,
+        isClear
+    })
+}
+
+async function playLoop(gameRecords) {
+    console.log('컴퓨터에게 승리하기 위해 몇번만에 성공해야 하나요?')
+    const inningLimit = await requestInput("")
+    const computerNumber = getComputerNumbers()
+    console.log(computerNumber) // 난중에 지울것 답지임
+    const startTime = new Date()
+    
+    let inning = 0
+    while(inning < inningLimit){
         let userNumber = await requireUserNumbers();
-        if(userNumber === INTERRUPT){
-            return GAMESTATE.EXIT;
-        }
         if(checkGameClear(computerNumber, userNumber)){
-            return GAMESTATE.START;
+            recordGameResult(gameRecords,startTime,inningLimit,true)
+            console.log("사용자가 승리하였습니다") 
+            return // 승리 경우 리턴
         }
+        inning++
     }
+    recordGameResult(gameRecords,startTime,inningLimit,false)
+    console.log("컴퓨터가 승리하였습니다")
+    return // 패패 경우 리턴
 }
 
 function getComputerNumbers(){
@@ -72,9 +116,6 @@ function getComputerNumbers(){
 async function requireUserNumbers(){
     while(true){
         let numbers = await requestInput('숫자를 입력해주세요: ')
-        if(parseInt(numbers) === INTERRUPT){
-            return INTERRUPT;
-        }
         numbers = checkUserNumbers(numbers);
         if(numbers !== null){
             return numbers.split('').map(Number);
@@ -101,17 +142,20 @@ function checkUserNumbers(userNumbers){
     
 }
 
+function compareNumber(computerNumbers,userNumbers){
+    const strikes = computerNumbers.filter((element, index)=>userNumbers.indexOf(element)===index);
+    const inclusion = computerNumbers.filter((element)=>userNumbers.includes(element));
+    const strikeCount = strikes.length;
+    const ballCount = inclusion.length - strikeCount;
+    return {strikeCount, ballCount}
+}
+
 function checkGameClear(computerNumbers,userNumbers){
-    let strikeCount = 0;
-    let ballCount = 0;
-    let strikes = computerNumbers.filter((element, index)=>userNumbers.indexOf(element)===index);
-    let inclusion = computerNumbers.filter((element)=>userNumbers.includes(element));
-    strikeCount = strikes.length;
-    ballCount = inclusion.length - strikeCount;
+
+    const {strikeCount, ballCount} = compareNumber(computerNumbers,userNumbers)
     if (strikeCount === NUMBER_LENGTH){
         console.log(strikeCount + '스트라이크');
         console.log('3개의 숫자를 모두 맞히셨습니다.');
-        console.log('-------게임 종료-------');
         return true;
     }
     if (ballCount === 0 && strikeCount === 0){
@@ -120,6 +164,7 @@ function checkGameClear(computerNumbers,userNumbers){
     else{
         console.log( ballCount + '볼 ' + strikeCount + '스트라이크');
     }
+    return false
 }
 
 playGame();

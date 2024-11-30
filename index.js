@@ -16,88 +16,220 @@ Object.freeze(GAMESTATE);
 //유저입력 받는 함수 -> 입력대기
 async function requestInput(msg){
     return new Promise((resolve)=>{
-        rl.question(msg,(answer)=>resolve(answer))
-    })
+        rl.question(msg,(answer)=>resolve(answer));
+    });
 }
 
 async function playGame(){
-    let gameState
-    let gameRecords = []
+    let gameState;
+    let gameRecords = [];
     while(gameState !== GAMESTATE.EXIT){
-        gameState = await requestInput('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요. ')
-        gameState = parseInt(gameState)
+        gameState = await requestInput('게임을 새로 시작하려면 1, 종료하려면 9를 입력하세요. ');
+        gameState = parseInt(gameState);
         
-        gameState = await handleGameState(gameState, gameRecords)
+        gameState = await handleGameState(gameState, gameRecords);
     }
 }
+
 async function handleGameState(gameState, gameRecords) {
     switch(gameState){
-        case GAMESTATE.START : 
-            await playLoop(gameRecords)
-            console.log('-------게임 종료-------')
-            break
-        case GAMESTATE.HISTORY : 
-            showHistory(gameRecords)
-            break
-        case GAMESTATE.STATS :
-            showStats(gameRecords)
-            break
-        case GAMESTATE.EXIT :
-            console.log('애플리케이션이 종료되었습니다.')
+        case GAMESTATE.START: 
+            await playLoop(gameRecords);
+            console.log('-------게임 종료-------');
+            break;
+        case GAMESTATE.HISTORY: 
+            showHistory(gameRecords);
+            break;
+        case GAMESTATE.STATS:
+            showStats(gameRecords);
+            break;
+        case GAMESTATE.EXIT:
+            console.log('애플리케이션이 종료되었습니다.');
             rl.close();
-            break
-        default :
-            console.log('1,2,3,9중에 입력해주세요.')
-            break
+            break;
+        default:
+            console.log('1,2,3,9중에 입력해주세요.');
+            break;
     }
-    return gameState
+
+    return gameState;
 }
+
 function convertTime(time){
-    minutes = ('0' + time.getMinutes()).slice(-2)
-    return `${time.getFullYear()}. ${time.getMonth()}. ${time.getDate()} ${time.getHours()}:${minutes}`
+    const minutes = ('0' + time.getMinutes()).slice(-2);
+    return `${time.getFullYear()}. ${time.getMonth()}. ${time.getDate()} ${time.getHours()}:${minutes}`;
 }
 
 function showHistory(gameRecords){ // 기록
-    history = gameRecords.reduce((acc, record, index) => {
-        return acc + `- [${index+1}] / 시작시간: ${convertTime(record.startTime)} / 종료시간: ${record.endTime} / 횟수: ${record.inningLimit} / 승리자: ${record.isClear}\n`;
+    const history = gameRecords.reduce((acc, record, index) => {
+        return acc + `- [${index+1}] / 시작시간: ${convertTime(record.startTime)} / 종료시간: ${convertTime(record.endTime)} / 횟수: ${record.inningLimit} / 승리자: ${record.isClear}\n`;
     }, '');
-    console.log(history)
+    console.log(history);
 }
 
 function showStats(gameRecords){ // 통계
+  const {minInning, minInningGameIds} = getMinInning(gameRecords);
+  const {maxInning, maxInningGameIds} = getMaxInning(gameRecords);
+  const {resultModeInningLimit, resultGameIds} = getModeInningLimit(gameRecords);
+  const {minInningLimit, minInningLimitGameIds} = getMinInningLimit(gameRecords);
+  const {maxInningLimit, maxInningLimitGameIds} = getMaxInningLimit(gameRecords);
 
+  console.log(`1. 가장 적은 횟수: ${minInning}회 - [${minInningGameIds}]`);
+  console.log(`2. 가장 많은 횟수: ${maxInning}회 - [${maxInningGameIds}]`);
+  console.log(`3. 가장 많이 적용된 승리/패패 횟수: ${resultModeInningLimit}회 - [${resultGameIds}]`);
+  console.log(`4. 가장 큰 값으로 적용된 승리/패패 횟수: ${maxInningLimit}회 - [${maxInningLimitGameIds}]`);
+  console.log(`5. 가장 적은 값으로 적용된 승리/패패 횟수: ${minInningLimit}회 - [${minInningLimitGameIds}]`);
+
+// 6. 적용된 승리/패패 횟수 평균: avg(입력제한)회
+// 7. 컴퓨터가 가장 많이 승리한 승리/패패 횟수: 컴퓨터.승리수 회
+// 8. 사용자가 가장 많이 승리한 승리/패패 횟수: 사용자.승리수 회
+
+
+// 적용된 승리/패패 횟수 평균: 5회
+// 컴퓨터가 가장 많이 승리한 승리/패패 횟수: 0회
+// 사용자가 가장 많이 승리한 승리/패패 횟수: 5회
+
+// 컴퓨터는 -> 최대 입력횟수
+// 사용자는 -> 라운드 수
 }
 
-function recordGameResult(gameRecords,startTime,inningLimit,isClear){
-    const endTime = new Date()
+function getMinInning(gameRecords){
+    const minInning = gameRecords.reduce((acc, record) => {
+        if (record.inning <= acc){
+            return record.inning;
+        } else {
+            return acc;
+        }
+    }, Infinity);
+
+    let minInningGameIds = gameRecords.reduce((acc, record, index) => {
+        if (record.inning === minInning){
+            acc.push(index + 1);
+        }
+
+        return acc;
+    }, []);
+
+    return {minInning, minInningGameIds};
+}
+
+function getMaxInning(gameRecords){
+    const maxInning = gameRecords.reduce((acc, record) => {
+        if (record.inning >= acc){
+            return record.inning;
+        } else {
+            return acc;
+        }
+    }, 0);
+
+    let maxInningGameIds = gameRecords.reduce((acc, record, index) => {
+        if (record.inning === maxInning){
+            acc.push(index + 1);
+        }
+
+        return acc;
+    }, []);
+
+    return {maxInning, maxInningGameIds};
+}
+
+function getModeInningLimit(gameRecords){
+    const inningLimitFrequencies = gameRecords.reduce((acc, record, index) => {
+        if (!acc[record.inningLimit]){
+            acc[record.inningLimit] = {frequency: 0, gameIds: []};
+        }
+
+        acc[record.inningLimit].frequency += 1;
+        acc[record.inningLimit].gameIds.push(index + 1);
+        return acc;
+    }, {});
+
+    const modeInningLimit = Object.entries(inningLimitFrequencies).reduce((acc, [inningLimit, frequencyData]) =>{
+        if (frequencyData.frequency >= acc.frequencyData.frequency){
+            return {inningLimit: inningLimit, frequencyData: frequencyData};
+        }
+
+        return acc;
+    }, {inningLimit: 0, frequencyData: {frequency: 0, gameIds: []}});
+
+    const resultModeInningLimit = modeInningLimit.inningLimit;
+    const resultGameIds = modeInningLimit.frequencyData.gameIds;
+    return {resultModeInningLimit, resultGameIds};
+}
+
+function getMaxInningLimit(gameRecords){
+    const maxInningLimit = gameRecords.reduce((acc, record) => {
+        if (record.inningLimit >= acc){
+            return record.inningLimit;
+        } else {
+            return acc;
+        }
+    }, 0);
+
+    let maxInningLimitGameIds = gameRecords.reduce((acc, record, index) => {
+        if (record.inningLimit === maxInningLimit){
+            return acc.push(index + 1);
+        }
+        
+        return acc;    
+    }, []);
+
+    return {maxInningLimit, maxInningLimitGameIds};
+}
+
+function getMinInningLimit(gameRecords){
+    const minInningLimit = gameRecords.reduce((acc, record) => {
+        if (record.inningLimit <= acc){
+            return record.inningLimit;
+        } else {
+            return acc;
+        }
+    }, Infinity);
+
+    let minInningLimitGameIds = gameRecords.reduce((acc, record, index) => {
+        if (record.inningLimit === minInningLimit){
+            return acc.push(index + 1);
+        } 
+        
+        return acc;
+    }, []);
+
+    return {minInningLimit, minInningLimitGameIds};
+}
+
+function recordGameResult(gameRecords, startTime, inning, inningLimit, isClear){
+    const endTime = new Date();
     gameRecords.push({
         startTime,
         endTime,
+        inning,
         inningLimit,
         isClear
-    })
+    });
 }
 
 async function playLoop(gameRecords) {
-    console.log('컴퓨터에게 승리하기 위해 몇번만에 성공해야 하나요?')
-    const inningLimit = await requestInput("")
-    const computerNumber = getComputerNumbers()
-    console.log(computerNumber) // 난중에 지울것 답지임
-    const startTime = new Date()
+    console.log('컴퓨터에게 승리하기 위해 몇번만에 성공해야 하나요?');
+    const inningLimit = await requestInput("");
+    const computerNumber = getComputerNumbers();
+    console.log(computerNumber); // 난중에 지울것 답지임
+    const startTime = new Date();
     
-    let inning = 0
+    let inning = 0;
     while(inning < inningLimit){
-        let userNumber = await requireUserNumbers();
-        if(checkGameClear(computerNumber, userNumber)){
-            recordGameResult(gameRecords,startTime,inningLimit,true)
-            console.log("사용자가 승리하였습니다") 
-            return // 승리 경우 리턴
+        inning++;
+        let userNumber = await requireUserNumbers();  
+        if (checkGameClear(computerNumber, userNumber)){
+            
+            recordGameResult(gameRecords, startTime, inning, inningLimit,true);
+            console.log("사용자가 승리하였습니다");
+            return; // 승리 경우 리턴
         }
-        inning++
     }
-    recordGameResult(gameRecords,startTime,inningLimit,false)
-    console.log("컴퓨터가 승리하였습니다")
-    return // 패패 경우 리턴
+
+    recordGameResult(gameRecords, startTime, inning, inningLimit, false);
+    console.log("컴퓨터가 승리하였습니다");
+    return; // 패패 경우 리턴
 }
 
 function getComputerNumbers(){
@@ -126,20 +258,19 @@ async function requireUserNumbers(){
 //세자리 숫자인지 확인
 function checkUserNumbers(userNumbers){
     if(isNaN(userNumbers)){
-        console.log('숫자를 입력해주세요.')
+        console.log('숫자를 입력해주세요.');
         return null;
     }
     if(userNumbers.includes('0')){
-        console.log('1에서 9까지의 숫자를 입력해주세요')
+        console.log('1에서 9까지의 숫자를 입력해주세요');
         return null;
     }
     let distinctNumbers = new Set(userNumbers);
     if (userNumbers.length !== NUMBER_LENGTH || distinctNumbers.size !== NUMBER_LENGTH){
-        console.log('중복없는 세자리 숫자를 입력해주세요.')
+        console.log('중복없는 세자리 숫자를 입력해주세요.');
         return null;
     }
-    return userNumbers;
-    
+    return userNumbers; 
 }
 
 function compareNumber(computerNumbers,userNumbers){
@@ -147,7 +278,7 @@ function compareNumber(computerNumbers,userNumbers){
     const inclusion = computerNumbers.filter((element)=>userNumbers.includes(element));
     const strikeCount = strikes.length;
     const ballCount = inclusion.length - strikeCount;
-    return {strikeCount, ballCount}
+    return {strikeCount, ballCount};
 }
 
 function checkGameClear(computerNumbers,userNumbers){
@@ -164,7 +295,7 @@ function checkGameClear(computerNumbers,userNumbers){
     else{
         console.log( ballCount + '볼 ' + strikeCount + '스트라이크');
     }
-    return false
+    return false;
 }
 
 playGame();

@@ -51,6 +51,11 @@ function convertTime(time) {
 
 // 게임 기록을 보여주는 함수
 function showHistory(gameRecords) { // 기록
+    if (gameRecords.length === 0) {
+        console.log('기록이 없습니다.');
+        console.log('-------기록 종료-------\n');
+        return;
+    }
     let winner = '';
     const history = gameRecords.reduce((acc, record, index) => {
         if (record.isClear) {
@@ -59,13 +64,19 @@ function showHistory(gameRecords) { // 기록
             winner = '컴퓨터';
         }
         return acc + `- [${index + 1}] / 시작시간: ${convertTime(record.startTime)} / 종료시간: ${convertTime(record.endTime)} / 횟수: ${record.inningLimit} / 승리자: ${winner}\n`;
-    }, '');
+    }, '\n');
+
     console.log(history);
-    console.log('-------기록 종료-------');
+    console.log('-------기록 종료-------\n');
 }
 
 // 게임 통계를 보여주는 함수
 function showStats(gameRecords) { // 통계
+    if (gameRecords.length === 0) {
+        console.log('통계데이터가 없습니다');
+        console.log('-------통계 종료-------');
+        return;
+    }
     const { minInning, minInningGameIds } = getMinInning(gameRecords);
     const { maxInning, maxInningGameIds } = getMaxInning(gameRecords);
     const { resultModeInningLimit, resultGameIds } = getModeInningLimit(gameRecords);
@@ -75,7 +86,7 @@ function showStats(gameRecords) { // 통계
     const modeComputerWinInningLimit = getModeComputerWinInningLimit(gameRecords);
     const modeUserWinInning = getModeUserWinInning(gameRecords);
 
-    console.log(`1. 가장 적은 횟수: ${minInning}회 - [${minInningGameIds}]`);
+    console.log(`\n1. 가장 적은 횟수: ${minInning}회 - [${minInningGameIds}]`);
     console.log(`2. 가장 많은 횟수: ${maxInning}회 - [${maxInningGameIds}]`);
     console.log(`3. 가장 많이 적용된 승리/패패 횟수: ${resultModeInningLimit}회 - [${resultGameIds}]`);
     console.log(`4. 가장 큰 값으로 적용된 승리/패패 횟수: ${maxInningLimit}회 - [${maxInningLimitGameIds}]`);
@@ -83,7 +94,7 @@ function showStats(gameRecords) { // 통계
     console.log(`6. 적용된 승리/패패 횟수 평균: ${averageOfInngLimit}회`);
     console.log(`7. 컴퓨터가 가장 많이 승리한 승리/패패 횟수: ${modeComputerWinInningLimit}회`);
     console.log(`8. 사용자가 가장 많이 승리한 승리/패패 횟수: ${modeUserWinInning}회`);
-    console.log('-------통계 종료-------');
+    console.log('\n-------통계 종료-------\n');
 }
 
 async function playLoop(gameRecords) {
